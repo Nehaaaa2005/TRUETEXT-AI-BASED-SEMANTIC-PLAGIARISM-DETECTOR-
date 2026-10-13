@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>TrueText AI Platform</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif}
+
+body{
+background: linear-gradient(to right,#eef7ff,#d6ecff);
+color:#2b3a42;
+min-height:100vh;
+}
+
+/* NAVBAR */
+.navbar{
+display:flex;
+justify-content:space-between;
+padding:20px 60px;
+background:#ffffff;
+box-shadow:0 4px 15px rgba(0,119,182,0.08);
+}
+
+.nav-links span{
+margin-left:25px;
+cursor:pointer;
+font-weight:600;
+color:#0077b6;
+transition:0.3s;
+}
+.nav-links span:hover{
+color:#00b4d8;
+}
+
+/* DASHBOARD */
+.dashboard{
+padding:60px;
+animation:fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn{
+from{opacity:0;transform:translateY(15px)}
+to{opacity:1;transform:translateY(0)}
+}
+
+/* MODE CARDS */
+.mode-cards{
+display:flex;
+gap:30px;
+margin-top:40px;
+}
+
+.mode-card{
+flex:1;
+background:#ffffff;
+padding:30px;
+border-radius:18px;
+box-shadow:0 12px 30px rgba(0,119,182,0.08);
+cursor:pointer;
+transition:0.3s;
+border:1px solid #e0f2ff;
+}
+.mode-card:hover{
+transform:translateY(-6px);
+box-shadow:0 18px 35px rgba(0,119,182,0.15);
+}
+
+/* SECTION */
+.section{
+display:none;
+margin-top:40px;
+background:#ffffff;
+padding:30px;
+border-radius:18px;
+box-shadow:0 12px 30px rgba(0,119,182,0.08);
+}
+.active{display:block}
+
+/* INPUTS */
+input,textarea{
+width:100%;
+padding:12px;
+margin:12px 0;
+border:1px solid #cce6ff;
+border-radius:8px;
+outline:none;
+}
+input:focus, textarea:focus{
+border-color:#00b4d8;
+box-shadow:0 0 0 2px rgba(0,180,216,0.15);
+}
+
+/* BUTTONS */
+button{
+padding:12px 26px;
+background:linear-gradient(45deg,#0077b6,#00b4d8);
+border:none;
+border-radius:10px;
+color:white;
+cursor:pointer;
+transition:0.3s;
+font-weight:600;
+}
+button:hover{
+background:linear-gradient(45deg,#0096c7,#48cae4);
+transform:translateY(-2px);
+}
+
+
+/* ABOUT */
+.info-card{
+background:#ffffff;
+padding:20px;
+border-radius:14px;
+box-shadow:0 10px 25px rgba(0,119,182,0.07);
+margin-bottom:20px;
+}
+
+/* LOGIN */
+#loginSection .section{
+box-shadow:0 15px 35px rgba(0,119,182,0.12);
+}
+
+/* TRUMO  */
+#trumoContainer{
+position:fixed;
+bottom:25px;
+right:25px;
+display:flex;
+flex-direction:column;
+align-items:flex-end;
+z-index:9999;
+}
+
+#trumo{
+width:140px;
+animation:bounce 3s infinite;
+cursor:pointer;
+transition:0.3s;
+}
+
+#trumo:hover{
+transform:scale(1.08);
+}
+
+@keyframes bounce{
+0%,100%{transform:translateY(0)}
+50%{transform:translateY(-8px)}
+}
+
+#mascotBox{
+position:absolute;
+bottom:160px;
+right:0;
+background:white;
+padding:18px;
+border-radius:20px;
+box-shadow:0 15px 30px rgba(0,0,0,0.18);
+max-width:260px;
+display:none;
+border:2px solid #90e0ef;
+z-index:10000;
+animation:fadeIn 0.3s ease-in-out;
+}
+
+#mascotBox::after{
+content:"";
+position:absolute;
+bottom:-10px;
+right:40px;
+width:20px;
+height:20px;
+background:white;
+transform:rotate(45deg);
+border-right:2px solid #90e0ef;
+border-bottom:2px solid #90e0ef;
+}
+
+#downloadBtn{
+margin-top:20px;
+}
+
+#watermark{
+position:fixed;
+bottom:10px;
+left:50%;
+transform:translateX(-50%);
+font-size:12px;
+color:#6c8aa6;
+opacity:0.8;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+<div><strong style="color:#0077b6;">TrueText AI</strong></div>
+<div class="nav-links">
+<span onclick="showDashboard()">Dashboard</span>
+<span onclick="showAbout()">About</span>
+<span id="loginNav" onclick="showLogin()">Login</span>
+<span id="logoutNav" onclick="logout()" style="display:none;">Logout</span>
+<span id="roleBadge" style="display:none;color:#00b4d8;font-weight:700;"></span>
+</div>
+</div>
+
+<div class="dashboard" id="dashboard" style="display:none;">
+<h1 style="color:#0077b6;">AI Semantic Plagiarism Detection</h1>
+<p style="color:#5f7f94;">Select detection mode</p>
+
+<div class="mode-cards">
+<div class="mode-card" onclick="openMode('singleMode'); showMascot('Upload or paste text. I will compare it with our reference corpus!')">
+<h3>📄 Classic Plagiarism</h3>
+<p>Compare file or text with reference dataset.</p>
+</div>
+
+<div class="mode-card" onclick="openMode('fileMode'); showMascot('Upload two documents to analyze semantic similarity.')">
+<h3>🔁 File vs File</h3>
+<p>Compare two documents.</p>
+</div>
+
+<div class="mode-card" onclick="openMode('textMode'); showMascot('Paste two texts and I will check their meaning similarity instantly!')">
+<h3>📝 Text vs Text</h3>
+<p>Instant semantic comparison.</p>
+</div>
+
+<div class="mode-card" onclick="openMode('aiMode'); showMascot('Paste text and I will detect if it was written by AI 🤖')">
+<h3>🤖 AI Text Detection</h3>
+<p>Detect whether content is AI-generated or human-written.</p>
+</div>
+
+</div>
+
+
+
+<!-- CLASSIC -->
+<div id="singleMode" class="section">
+<h2 style="color:#0077b6;">Classic Plagiarism Check</h2>
+<input type="file" id="singleFile">
+<p style="text-align:center;margin:10px 0;">OR</p>
+<textarea id="singleText" rows="5" placeholder="Paste text to analyze..."></textarea>
+<button onclick="checkSingle()">Analyze</button>
+<div id="resultCard" style="display:none;margin-top:25px;text-align:center;">
+
+<h3 style="color:#0077b6;margin-bottom:10px;">Plagiarism Score</h3>
+
+<div style="position:relative;display:inline-block;">
+<canvas id="singleChart"></canvas>
+<div id="chartValue" 
+style="position:absolute;top:50%;left:50%;
+transform:translate(-50%,-50%);
+font-size:26px;font-weight:700;color:#0077b6;">
+</div>
+</div>
+
+<p id="verdictText" style="margin-top:15px;font-weight:600;"></p>
+
+<div id="downloadBtn" style="margin-top:15px;"></div>
+
+</div>
+</div>
+
+<!-- FILE VS FILE -->
+<div id="fileMode" class="section">
+<h2 style="color:#0077b6;">File vs File</h2>
+
+<input type="file" id="file1">
+<input type="file" id="file2">
+<button onclick="checkFile()">Analyze</button>
+
+<div id="fileResultCard" style="display:none;margin-top:30px;text-align:center;">
+
+<h3 style="color:#0077b6;margin-bottom:20px;font-size:22px;">
+Similarity Score
+</h3>
+
+<div style="display:flex;flex-direction:column;align-items:center;gap:20px;">
+
+<div style="position:relative;width:200px;height:200px;">
+    <canvas id="fileChart"></canvas>
+    <div id="fileChartValue"
+        style="position:absolute;top:50%;left:50%;
+        transform:translate(-50%,-50%);
+        font-size:28px;font-weight:700;color:#0077b6;">
+    </div>
+</div>
+
+<h3 id="fileVerdictText" style="font-weight:600;"></h3>
+
+</div>
+</div>
+</div>
+
+<!-- TEXT VS TEXT -->
+<div id="textMode" class="section">
+<h2 style="color:#0077b6;">Text vs Text</h2>
+
+<textarea id="text1" rows="4" placeholder="First text"></textarea>
+<textarea id="text2" rows="4" placeholder="Second text"></textarea>
+
+<button onclick="checkText()">Compare</button>
+
+<div id="textResultCard" style="display:none;margin-top:30px;text-align:center;">
+
+<h3 style="color:#0077b6;margin-bottom:20px;font-size:22px;">
+Similarity Score
+</h3>
+
+<div style="display:flex;flex-direction:column;align-items:center;gap:20px;">
+
+<div style="position:relative;width:200px;height:200px;">
+    <canvas id="textChart"></canvas>
+    <div id="textChartValue"
+        style="position:absolute;top:50%;left:50%;
+        transform:translate(-50%,-50%);
+        font-size:28px;font-weight:700;color:#0077b6;">
+    </div>
+</div>
+
+<h3 id="textVerdictText" style="font-weight:600;"></h3>
+
+
+</div>
+</div>
+</div>
+
+<!-- AI DETECTION -->
+<div id="aiMode" class="section">
+<h2 style="color:#0077b6;">AI-Generated Text Detection</h2>
+
+<textarea id="aiText" rows="6" placeholder="Paste text to check if it's AI-generated..."></textarea>
+
+<button onclick="detectAI()">Analyze</button>
+
+<div id="aiResultCard" style="display:none;margin-top:30px;text-align:center;">
+
+<h3 style="color:#0077b6;margin-bottom:20px;font-size:22px;">
+AI Detection Result
+</h3>
+
+<div id="aiVerdict" style="font-size:22px;font-weight:700;margin-bottom:10px;"></div>
+<div id="aiConfidence" style="font-size:18px;color:#5f7f94;"></div>
+
+</div>
+</div>
+
+</div>
+
+
+<!-- ABOUT -->
+<div class="dashboard" id="aboutSection" style="display:none">
+<h1 style="color:#0077b6;">About TrueText</h1>
+
+<div class="info-card">
+<h3>Overview</h3>
+<p>
+TrueText AI is an advanced semantic plagiarism detection system that leverages 
+Sentence-BERT (SBERT) embeddings to evaluate contextual similarity rather than 
+surface-level keyword overlap. Unlike traditional plagiarism tools that rely 
+on exact word matching, TrueText analyzes sentence-level meaning using 
+vector embeddings and cosine similarity scoring.
+</p>
+</div>
+
+<div class="info-card">
+<h3>Workflow</h3>
+<p>
+The system follows a structured AI pipeline:
+Text Extraction → Preprocessing → Intelligent Chunking → 
+SBERT Embedding Generation → Cosine Similarity Comparison → 
+Threshold Filtering → Structured Report Generation with Highlighted Sections.
+</p>
+</div>
+
+<div class="info-card">
+<h3>Future Scope</h3>
+<p>
+Future enhancements include large-scale academic corpus integration, 
+cross-language semantic detection, AI confidence scoring, 
+real-time collaborative document analysis, and scalable cloud deployment 
+for institutional and enterprise-level applications.
+</p>
+</div>
+
+</div>
+
+<!-- LOGIN -->
+<div class="dashboard" id="loginSection">
+<div class="section active" style="max-width:400px;margin:auto;text-align:center">
+<h2 style="color:#0077b6;">Welcome Back</h2>
+<p style="color:#5f7f94;">Login to access detection features</p>
+<input type="text" id="username" placeholder="Username">
+<input type="password" id="password" placeholder="Password">
+<div id="loginError" style="color:red;margin-bottom:10px;"></div>
+<button onclick="adminLogin()">Admin Login</button>
+<button onclick="userLogin()">User Login</button>
+<hr style="margin:20px 0;">
+<p>New user?</p>
+<button onclick="showSignup()">Create Account</button>
+</div>
+</div>
+
+<!-- SIGNUP -->
+<div class="dashboard" id="signupSection" style="display:none">
+<div class="section active" style="max-width:400px;margin:auto;text-align:center">
+
+<h2 style="color:#0077b6;">Create Account</h2>
+
+<input type="text" id="newUsername" placeholder="Choose Username">
+<input type="password" id="newPassword" placeholder="Choose Password">
+
+<div id="signupMsg" style="margin-bottom:10px;"></div>
+
+<button onclick="userSignup()">Signup</button>
+<button onclick="showLogin()" style="background:#aaa;margin-top:10px;">Back</button>
+
+</div>
+</div>
+
+<!-- Trumo Mascot -->
+<div id="trumoContainer">
+    <img id="trumo" src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png">
+    <div id="mascotBox">
+        <span id="mascotText"></span>
+    </div>
+</div>
+
+<script>
+
+const dashboard = document.getElementById("dashboard");
+const aboutSection = document.getElementById("aboutSection");
+const loginSection = document.getElementById("loginSection");
+const downloadBtn = document.getElementById("downloadBtn");
+let isLoggedIn = false;
+
+function showDashboard(){
+
+if(!isLoggedIn){
+    showLogin();
+    showMascot("Please login to access the dashboard 🔐");
+    return;
+}
+
+dashboard.style.display="block";
+aboutSection.style.display="none";
+loginSection.style.display="none";
+}
+
+function showAbout(){
+dashboard.style.display="none";
+aboutSection.style.display="block";
+loginSection.style.display="none";
+showMascot("Hi! I'm Trumo 🤖 I detect meaning, not just words.");
+}
+
+function showLogin(){
+
+// Hide EVERYTHING first
+dashboard.style.display="none";
+aboutSection.style.display="none";
+loginSection.style.display="none";
+document.getElementById("signupSection").style.display="none";
+
+// Then show login cleanly
+loginSection.style.display="block";
+}
+
+function openMode(id){
+document.querySelectorAll('.section').forEach(sec=>sec.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+}
+
+function showMascot(message){
+const box=document.getElementById("mascotBox");
+const text=document.getElementById("mascotText");
+
+text.innerText=message;
+box.style.display="block";
+
+setTimeout(()=>{
+box.style.display="none";
+},6000);
+}
+
+async function adminLogin(){
+
+const user = document.getElementById("username").value;
+const pass = document.getElementById("password").value;
+const error = document.getElementById("loginError");
+
+const formData = new FormData();
+formData.append("username", user);
+formData.append("password", pass);
+
+try{
+    const res = await fetch("/admin/login", {
+        method:"POST",
+        body:formData,
+        credentials:"include"
+    });
+
+if(res.ok){
+    isLoggedIn = true;
+    error.innerText="";
+
+    document.getElementById("loginNav").style.display="none";
+    document.getElementById("logoutNav").style.display="inline";
+    document.getElementById("roleBadge").innerText = "Admin";
+    document.getElementById("roleBadge").style.display = "inline";
+
+    showDashboard();
+    showMascot("Access granted. Welcome Admin 🚀");
+}
+    else{
+        error.innerText="Invalid credentials.";
+    }
+
+}catch(err){
+    error.innerText="Server error.";
+}
+}
+
+async function userLogin(){
+
+const user = document.getElementById("username").value;
+const pass = document.getElementById("password").value;
+const error = document.getElementById("loginError");
+
+const formData = new FormData();
+formData.append("username", user);
+formData.append("password", pass);
+
+try{
+    const res = await fetch("/user/login", {
+        method:"POST",
+        body:formData,
+        credentials:"include"
+    });
+
+if(res.ok){
+    isLoggedIn = true;
+    error.innerText="";
+
+    document.getElementById("loginNav").style.display="none";
+    document.getElementById("logoutNav").style.display="inline";
+    document.getElementById("roleBadge").innerText = "User";
+    document.getElementById("roleBadge").style.display = "inline";
+
+    showDashboard();
+    showMascot("Welcome back! Ready to scan your documents ✨");
+}
+else{
+    const data = await res.json();
+    error.innerText = data.message || "Invalid credentials.";
+}
+
+}catch(err){
+    error.innerText="Server error.";
+}
+}
+
+async function checkSingle(){
+
+showMascot("Scanning meanings... not just words 👀");
+
+const formData = new FormData();
+
+const singleFile = document.getElementById("singleFile");
+const singleText = document.getElementById("singleText");
+
+if(singleFile.files.length > 0){
+formData.append("file", singleFile.files[0]);
+}
+else if(singleText.value.trim() !== ""){
+formData.append("text", singleText.value);
+}
+else{
+showMascot("Please upload a file or paste some text first!");
+return;
+}
+
+try{
+const res = await fetch("/check-single-file", {
+method:"POST",
+body:formData,
+credentials:"include"
+});
+
+const data = await res.json();
+
+renderChart("singleChart", data.plagiarism_percentage);
+
+if(data.plagiarism_percentage < 30){
+showMascot("Nice! This looks fresh and original ✨");
+}
+else if(data.plagiarism_percentage < 60){
+showMascot("Hmm... I sense some similarities. Maybe revise?");
+}
+else{
+showMascot("Uh-oh! High similarity detected. Let’s fix this ⚠️");
+}
+
+downloadBtn.innerHTML =
+`<a href="${data.report_url}" target="_blank">
+<button>Download Detailed Report</button></a>`;
+
+}
+catch(error){
+showMascot("Oops! Something went wrong.");
+}
+
+}
+
+function renderChart(canvasId, value){
+
+const ctx = document.getElementById(canvasId);
+ctx.height = 180;
+
+// Destroy previous chart if exists
+if(ctx.chartInstance){
+    ctx.chartInstance.destroy();
+}
+
+ctx.chartInstance = new Chart(ctx,{
+type:'doughnut',
+data:{
+labels:['Plagiarism','Original'],
+datasets:[{
+data:[value,100-value],
+backgroundColor:[
+'rgba(0,119,182,0.9)',
+'rgba(144,224,239,0.5)'
+],
+borderWidth:0
+}]
+},
+options:{
+plugins:{legend:{display:false}},
+cutout:'75%',
+animation:{animateScale:true}
+}
+});
+
+// If classic mode elements exist, update them
+const chartValue = document.getElementById("chartValue");
+const verdictText = document.getElementById("verdictText");
+const resultCard = document.getElementById("resultCard");
+
+if(chartValue){
+    chartValue.innerText = value + "%";
+}
+
+if(verdictText){
+    let verdict="";
+    if(value < 30){
+        verdict="Low Similarity ✅";
+    }
+    else if(value < 60){
+        verdict="Moderate Similarity ⚠️";
+    }
+    else{
+        verdict="High Similarity ❗";
+    }
+    verdictText.innerText = verdict;
+}
+
+if(resultCard){
+    resultCard.style.display="block";
+}
+
+}
+
+async function checkFile(){
+
+const f1 = document.getElementById("file1");
+const f2 = document.getElementById("file2");
+
+if(f1.files.length === 0 || f2.files.length === 0){
+    showMascot("Please upload both files.");
+    return;
+}
+
+showMascot("Analyzing both documents... 🔍");
+
+const formData = new FormData();
+formData.append("files", f1.files[0]);
+formData.append("files", f2.files[0]);
+
+try{
+const res = await fetch("/check-plagiarism", {
+    method:"POST",
+    body:formData,
+    credentials:"include"
+});
+
+const data = await res.json();
+
+renderChart("fileChart", data.plagiarism_percentage);
+
+document.getElementById("fileResultCard").style.display="block";
+document.getElementById("fileChartValue").innerText =
+data.plagiarism_percentage + "%";
+
+let verdict="";
+let value = data.plagiarism_percentage;
+
+if(value < 30){
+    verdict="Low Similarity ✅";
+}
+else if(value < 60){
+    verdict="Moderate Similarity ⚠️";
+}
+else{
+    verdict="High Similarity ❗";
+}
+
+document.getElementById("fileVerdictText").innerText = verdict;
+
+showMascot("Comparison complete! 📊");
+
+}catch(error){
+console.error(error);
+showMascot("Something went wrong.");
+}
+}
+
+async function checkText(){
+
+const t1 = document.getElementById("text1");
+const t2 = document.getElementById("text2");
+
+if(t1.value.trim() === "" || t2.value.trim() === ""){
+    showMascot("Please enter both texts.");
+    return;
+}
+
+showMascot("Comparing meanings... 🧠");
+
+try{
+const res = await fetch("/check-text", {
+    method:"POST",
+    credentials:"include",
+    headers:{
+        "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+        text1: t1.value,
+        text2: t2.value
+    })
+});
+
+const data = await res.json();
+
+renderChart("textChart", data.plagiarism_percentage);
+
+document.getElementById("textResultCard").style.display="block";
+document.getElementById("textChartValue").innerText =
+data.plagiarism_percentage + "%";
+
+let verdict="";
+let value = data.plagiarism_percentage;
+
+if(value < 30){
+    verdict="Low Similarity ✅";
+}
+else if(value < 60){
+    verdict="Moderate Similarity ⚠️";
+}
+else{
+    verdict="High Similarity ❗";
+}
+
+document.getElementById("textVerdictText").innerText = verdict;
+
+showMascot("Text comparison complete! 📊");
+
+}catch(error){
+console.error(error);
+showMascot("Something went wrong.");
+}
+}
+
+window.onload = function(){
+document.getElementById("loginSection").style.display="block";
+};
+
+async function detectAI(){
+
+const text = document.getElementById("aiText").value.trim();
+
+if(text === ""){
+    showMascot("Please paste some text first ✍️");
+    return;
+}
+
+showMascot("Analyzing writing style using AI model... 🤖");
+
+const formData = new FormData();
+formData.append("text", text);
+
+try{
+const res = await fetch("/detect-ai", {
+    method:"POST",
+    body:formData,
+    credentials:"include"
+});
+
+const data = await res.json();
+
+document.getElementById("aiResultCard").style.display="block";
+
+document.getElementById("aiVerdict").innerText = data.ai_verdict;
+document.getElementById("aiConfidence").innerText =
+"Confidence: " + data.confidence_percentage + "%";
+
+if(data.ai_verdict.includes("AI")){
+    showMascot("This looks AI-generated 🤖");
+}
+else{
+    showMascot("This appears human-written ✨");
+}
+
+}catch(error){
+console.error(error);
+showMascot("AI detection failed.");
+}
+}
+
+async function logout(){
+
+    // Try admin logout
+    await fetch("/admin/logout", { credentials:"include" });
+
+    // Try user logout (safe even if not logged in as user)
+    await fetch("/user/logout", { credentials:"include" });
+
+    isLoggedIn = false;
+
+    document.getElementById("logoutNav").style.display="none";
+    document.getElementById("loginNav").style.display="inline";
+    document.getElementById("roleBadge").style.display = "none";
+
+    showLogin();
+    showMascot("Logged out successfully 👋");
+}
+
+function showSignup(){
+dashboard.style.display="none";
+aboutSection.style.display="none";
+loginSection.style.display="none";
+document.getElementById("signupSection").style.display="block";
+}
+
+async function userSignup(){
+
+const u = document.getElementById("newUsername").value;
+const p = document.getElementById("newPassword").value;
+const msg = document.getElementById("signupMsg");
+
+const formData = new FormData();
+formData.append("username", u);
+formData.append("password", p);
+
+const res = await fetch("/user/signup", {
+    method:"POST",
+    body:formData
+});
+
+const data = await res.json();
+
+if(data.status === "success"){
+    msg.style.color="green";
+msg.innerText="Account created successfully!";
+
+document.getElementById("newUsername").value="";
+document.getElementById("newPassword").value="";
+
+// Instantly switch to login
+showLogin();
+}
+else{
+    msg.style.color="red";
+    msg.innerText=data.message;
+}
+}
+
+// Make functions global so navbar can access them
+window.showDashboard = showDashboard;
+window.showAbout = showAbout;
+window.showLogin = showLogin;
+window.adminLogin = adminLogin;
+window.userLogin = userLogin;
+window.logout = logout;
+window.openMode = openMode;
+window.checkSingle = checkSingle;
+window.checkFile = checkFile;
+window.checkText = checkText;
+window.detectAI = detectAI;
+window.showSignup = showSignup;
+window.userSignup = userSignup;
+</script>
+
+<div id="watermark">
+© 2026 TrueText AI | Developed by Neha Suresh | SBERT Semantic Engine
+
+</div>
+</body>
+</html>

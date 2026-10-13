@@ -1,0 +1,29 @@
+# Ignore virtual environments anywhere in the project
+**/venv/
+**/.venv/
+# Python virtual environments
+venv/
+.venv/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Uploaded documents
+backend/uploads/
+uploads/
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Editor and OS files
+.vscode/
+.DS_Store
+Thumbs.db
